@@ -139,10 +139,10 @@ def importarChave(path) -> RSAKeys:
     with open(path, 'r') as f:
         extern_key = f.read()
     
-    key_type = tipoChave(extern_key)
-    keys_string = utils.decodingBASE64(extern_key, key_type) 
-    key = utils.totuple(keys_string)
-    if key_type == "CHAVE PUBLICA":
+    tipoDaChave = tipoChave(extern_key)
+    tokens = utils.decodingBASE64(extern_key) 
+    key = utils.totuple(tokens)
+    if tipoDaChave == "CHAVE PUBLICA":
         chavePub, modulus = key
         return RSAKeys(chavePub==chavePub, modulus=modulus)
     else:
