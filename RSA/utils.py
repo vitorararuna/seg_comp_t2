@@ -202,7 +202,6 @@ def octetoParaInteiro(X):
 
 # ( int>0 && comprimento "l" da string ) -> string em octeto de comprimento l
 def inteiroParaOcteto(x: int, l: int):
-   
     return x.to_bytes(l, byteorder='big')
    
 

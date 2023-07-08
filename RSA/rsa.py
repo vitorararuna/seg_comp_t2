@@ -137,10 +137,10 @@ class RSAKeys:
 # ------------
 def importarChave(path) -> RSAKeys:
     with open(path, 'r') as f:
-        extern_key = f.read()
+        chaveExterna = f.read()
     
-    tipoDaChave = tipoChave(extern_key)
-    tokens = utils.decodingBASE64(extern_key) 
+    tipoDaChave = tipoChave(chaveExterna)
+    tokens = utils.decodingBASE64(chaveExterna) 
     key = utils.totuple(tokens)
     if tipoDaChave == "CHAVE PUBLICA":
         chavePub, modulus = key
@@ -149,8 +149,8 @@ def importarChave(path) -> RSAKeys:
         chavePriv, modulus = key
         return RSAKeys(chavePriv=chavePriv, modulus=modulus)
     
-def tipoChave(extern_key):
-    if "CHAVE PUBLICA" in extern_key:
+def tipoChave(chaveExterna):
+    if "CHAVE PUBLICA" in chaveExterna:
         return "CHAVE PUBLICA"
     else:
         return "CHAVE PRIVADA"

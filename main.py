@@ -71,27 +71,29 @@ def main():
             while option:
                 print('************ CRIPTOGRAFIA OAEP ************')
                 opt = input("1) Cifrar\n2) Decifrar\nEscolha uma opcao: ")
-                if opt == '1':
-                        path = input("Path da chave publica: ")
-                        chavePubImportada = importarChave(path)
-                        mensagem = input("Mensagem para cifrar: ")
-                        EM = oaep_encrypt(M=mensagem, chavePub=chavePubImportada)
-                        print("Mensagem cifrada com OAEP: ",EM)
-                        export = input("1)Exportar mensagem cifrada\n 2) Voltar ")
-                        if export == '1':
-                            nomeArq = input("Nome do arquivo para mensagem cifrada:")
-                            with open(nomeArq, 'wb') as f:
-                                f.write(EM)
-                elif opt == '2':
-                    path = input("Path da chave privada: ")
-                    chavePrivImportada = importarChave(path)
-                    path = input("Caminho para arquivo da mensagem cifrada EM: ")
-                    with open(path, "rb") as f:
-                            EM = f.read()
-                    DM = oaep_decrypt(C=EM, chavePriv=chavePrivImportada)
-                    print("Mensagem decifrada: ", DM)
-                else:
-                    break   
+                try:
+                    if opt == '1':
+                            path = input("Path da chave publica: ")
+                            chavePubImportada = importarChave(path)
+                            mensagem = input("Mensagem para cifrar: ")
+                            EM = oaep_encrypt(M=mensagem, chavePub=chavePubImportada)
+                            print("Mensagem cifrada com OAEP: ",EM)
+                            export = input("1)Exportar mensagem cifrada\n 2) Voltar ")
+                            if export == '1':
+                                nomeArq = input("Nome do arquivo para mensagem cifrada:")
+                                with open(nomeArq, 'wb') as f:
+                                    f.write(EM)
+                    elif opt == '2':
+                        path = input("Path da chave privada: ")
+                        chavePrivImportada = importarChave(path)
+                        path = input("Caminho para arquivo da mensagem cifrada EM: ")
+                        with open(path, "rb") as f:
+                                EM = f.read()
+                        DM = oaep_decrypt(C=EM, chavePriv=chavePrivImportada)
+                        print("Mensagem decifrada: ", DM)
+                    else:
+                        break
+                except: print("Erro inesperado, talvez string tenha ficado muito grande")
         elif a == 'x':
             break
         else:
