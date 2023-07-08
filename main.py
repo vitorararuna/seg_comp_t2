@@ -2,7 +2,7 @@
 
 import sys
 from RSA.rsa import importarChave;
-from RSA.oaep import oaep_encrypt;
+from RSA.oaep import oaep_encrypt, oaep_decrypt;
 novos_caminhos = [
     '/Users/vitorararuna/dev/trabalho-seg-comp/RSA',
 ]
@@ -70,24 +70,28 @@ def main():
             option = True
             while option:
                 print('************ CRIPTOGRAFIA OAEP ************')
-                option = input("1) Cifrar\n2) Decifrar\nEscolha uma opcao: ")
-                if int(option) == 1:
-                    print("111")
-                    if int(input) == 1:
+                opt = input("1) Cifrar\n2) Decifrar\nEscolha uma opcao: ")
+                if opt == '1':
                         path = input("Path da chave publica: ")
                         chavePubImportada = importarChave(path)
                         mensagem = input("Mensagem para cifrar: ")
-                        EM = oaep_encrypt(M=mensagem, pub_key=chavePubImportada)
+                        EM = oaep_encrypt(M=mensagem, chavePub=chavePubImportada)
                         print("Mensagem cifrada com OAEP: ",EM)
                         export = input("1)Exportar mensagem cifrada\n 2) Voltar ")
-                        if int(export) == 1:
+                        if export == '1':
                             nomeArq = input("Nome do arquivo para mensagem cifrada:")
                             with open(nomeArq, 'wb') as f:
                                 f.write(EM)
-                        elif int(option) == 2:
-                            print("222")
-                        else:
-                            break   
+                elif opt == '2':
+                    path = input("Path da chave privada: ")
+                    chavePrivImportada = importarChave(path)
+                    path = input("Caminho para arquivo da mensagem cifrada EM: ")
+                    with open(path, "rb") as f:
+                            EM = f.read()
+                    DM = oaep_decrypt(C=EM, chavePriv=chavePrivImportada)
+                    print("Mensagem decifrada: ", DM)
+                else:
+                    break   
         elif a == 'x':
             break
         else:

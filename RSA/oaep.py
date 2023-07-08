@@ -29,7 +29,7 @@ from RSA.rsa import RSAKeys
 #   b"" indica que a string é tratada como uma sequência de 
 #   bytes em vez de uma sequência de caracteres Unicode
 def oaep_encrypt(chavePub:RSAKeys, M, P = b"") -> bytes:
-
+    print("oaep_encrypt")
     M = M +  ' '
 
     # Operação de codificação EME-OAEP (oaep_encode) à mensagem M e ao parâmetros de 
@@ -110,10 +110,10 @@ def oaep_encode(M:str, emLen, label= b"", hash=utils.sha256, mask=utils.mask) ->
     return EM
 
 
-# Processo de criptografia Rsa
-#     Chave Publica = (e, n)
 def rsaep(chavePub:RSAKeys, m) -> int:
-   
+# Processo de cifrar Rsa
+#     Chave Publica = (e, n)
+
     e, n = chavePub.pegarChave()
     c = pow(m, e, n)
     if c > n - 1 or c < 0:
@@ -128,95 +128,96 @@ def rsaep(chavePub:RSAKeys, m) -> int:
 # RSAES - OAEP Decryption process:
 # https://www.inf.pucrs.br/~calazans/graduate/TPVLSI_I/RSA-oaep_spec.pdf
 
-def oaep_decrypt(prv_key:RSAKeys, C, P=b"") -> str:
-    """RSAES-OAEP-Decrypt(K, C, P)
-        Inputs: 
-            1. K - recipients RSA private key
-            2. C - ciphertext to be decrypted, an octet string of length k
-            3. P - encoding parameters, an octet string that may be empty
 
-        Output:
-            1. M -  message, an octet string of length at most k - 2 - 2hLen, where hLen is the length in octets
-            of the hash function output for EME-OAEP
-        Errors:
-            1. Decryption error
-    """
+def oaep_decrypt(chavePriv:RSAKeys, C, P=b"") -> str:
+#  RSAES-OAEP-Decrypt(K, C, P)
+#         Entradas: 
+#             1. K - Chave privada RSA dos destinatários
+#             2. C - Texto cifrado a ser descriptografado, uma string de octetos de comprimento k
+#             3. P - parâmetros de codificação, uma string de octeto que pode estar vazia
+
+#         Saidas:
+#             1. M - (mensagem) uma string de octetos de comprimento no máximo k - 2 - 2hLen, onde hLen é o comprimento em octetos
+#             da saída da função hash para EME-OAEP
+#         Errors:
+#             1. Erro ao decifrar
+
     # steps:
-    k = prv_key._size_in_bytes()
-    # 1. If the length of the ciphertext C is not k octets, output decryption error and stop.
+    k = chavePriv.tamanhoEmBytes()
+    # 1. Se o comprimento do texto cifrado C não for k octetos, erro de descriptografia.
     cLen = len(C)
     if cLen != k:
-        raise ValueError("Decryption error, different number of octets")
-    # 2. Convert the ciphertext C to an integer ciphertext representative c
-    c = os2ip(C)
-    # 3. Apply the RSADP decryption primitive  to the private key K and the ciphertext
-    # representative c to produce an integer message representative m:
-    m = rsadp(prv_key=prv_key, c=c)
-    # 4. Convert the message representative m to an encoded message EM of length k − 1 octets
-    EM =i2osp(m, k - 1)
-    # 5. Apply the EME-OAEP decoding operation to the encoded message EM and
-    # the encoding parameters P to recover a message M:
+        raise ValueError("Erro na descriptografia, número distinto de octetos")
+    # 2. Converte o texto cifrado C em um texto cifrado inteiro representativo c
+    c = utils.octetoParaInteiro(C)
+    
+    # 3. Aplica a primitiva de descriptografia RSADP à chave privada K e ao texto cifrado
+    # representante c para produzir uma mensagem inteira
+    m = rsadp(chavePriv=chavePriv, c=c)
+    
+    # 4. Converte a mensagem representativa m em uma mensagem codificada EM de comprimento k − 1 octetos
+    EM = utils.inteiroParaOcteto(m, k - 1)
+   
+    # 5. Aplica a operação de decodificação EME-OAEP à mensagem codificada EM e
+    # os parâmetros de codificação P para recuperar uma mensagem
     M = oaep_decode(EM, P)
-    # 6. Output the message M
+   
+    # 6. Output da mensagem
     return M.decode('utf-8')
 
+def oaep_decode(ME, label = b'', hash=utils.sha256, mask=utils.mask) -> bytes:
+#   EME-OAEP-Decode(EM, P)
+#         Opcoes: 
+#               - Funcao hash (hLen denota o comprimento em octetos da saída da função hash)
+#               - Funcao mask para gerar a mascara
+#         Entrada: 
+#             1. EM - mensagem codificada, uma string de octetos de comprimento de pelo menos 2hLen + 1 (meLen denota o comprimento em
+#                     octetos de EM)
+#             2. P - Parâmetros de codificação, uma string de octeto
+#         Saida:
+#             1. M - mensagem recuperada, uma cadeia de octetos de comprimento no máximo meLen - 1 - 2hLen
+#         Erros:
+#             1. Erro de decodificação
 
-def oaep_decode(EM, label = b'', hash=sha256, mask=mask1) -> bytes:
-        """ EME-OAEP-Decode(EM, P)
-        Options: 
-            1. Hash - hash function (hLen denotes the length in octets of the hash function output)
-            2. mask - mask generation function
-        Input: 
-            1. EM - encoded message, an octet string of length at least 2hLen + 1 (emLen denotes the length in
-            octets of EM)
-            2. P - Encoding parameters, an octet string
-        Output:
-            1. M - recovered message, an octet string of length at most emLen - 1 - 2hLen
-
-        Errors:
-            1. Decoding error
-        """
         # steps:
-        # 1. If the length of P is greater than the input limitation then output ‘‘decoding error’’ and stop.
+        # 1. Se o comprimento de P for maior que a limitação de entrada, “erro de decodificação”.
         # SHA1: 2^61 - 1
         if len(label) > (pow(2, 61) - 1):
-            raise ValueError("Decoding error, parameter too large")
-        # 2. If emLen < 2hLen + 1, output ‘‘decoding error’’ and stop.
-        emLen = len(EM) 
+            raise ValueError("Erro de decodificação, parametro mt grande")
+        # 2. Se meLen < 2hLen + 1, imprima ‘erro de decodificação’.
+        meLen = len(ME) 
         lHash = hash(label)
         hLen = len(lHash)
+
+        #nseisepreciso 
+        if meLen < ((2*hLen) + 1):
+            raise ValueError("Erro de decodificação, parametro mt grand")
         
-        # if emLen < ((2*hLen) + 1):
-        #     raise ValueError("Decoding error, parameter too large")
-        # 3. Let maskedSeed be the first hLen octets of EM and let maskedBd be the remaining emLen-hLen octets.
-        maskedSeed = EM[0:hLen]
-        maskedBd = EM[hLen+1:-1]
-        # 4.  Let seedMask = mask(maskedBd, hLen).
+        # 3. Seja maskedSeed os primeiros hLen octetos de ME e maskedBd os demais octetos meLen-hLen.
+        maskedSeed = ME[0:hLen]
+        maskedBd = ME[hLen+1:-1]
+        # 4. mask(maskedBd, hLen).
         seedMask =  mask(maskedBd, hLen)
-        # 5. Let seed = maskedSeed xor seedMask.
-        seed = xor(maskedSeed,seedMask) 
-        # 6. Let bdMask = mask(seed , emLen - hLen)
-        bdMask = mask(seed, emLen - hLen)
-        # 7. Let DB = maskedBd xor bdMask.
-        DB = xor(maskedBd, bdMask)
-        # 8. Let pHash = Hash(P), an octet string of length hLen.
+        # 5. maskedSeed xor seedMask.
+        seed = utils.xor(maskedSeed,seedMask) 
+        # 6. mask(seed , meLen - hLen)
+        bdMask = mask(seed, meLen - hLen)
+        # 7. maskedBd xor bdMask.
+        DB = utils.xor(maskedBd, bdMask)
+        # 8. pHash = Hash(P), an octet string of length hLen.
         index = DB.find(b'\x01') + 1
         if lHash not in DB:
-            raise ValueError("Hash not in DB")
+            raise ValueError("Hash nao presente BD")
 
-        # 9. Separate DB into an octet string pHash’ || PS || 01 || M
+        # 9. Separa DB em uma string de octeto pHash || PS || 01 || M
         # 10. return m
         return DB[index:]
 
-def rsadp(c, prv_key: RSAKeys) -> int:
-    """ 
-    Rsa decryption process
-    Private Key = (d, n)
-    """
-
-    d, n = prv_key.get_key()
+def rsadp(c, chavePriv: RSAKeys) -> int:
+# Processo de decifrar RSA
+# Chave Privada = (d, n)
+    d, n = chavePriv.pegarChave()
     m = pow(c, d, n)
     if m > n - 1 or m < 0:
-        raise ValueError("Ciphertext representative out of range")
+        raise ValueError("Texto cifrado grande demais!")
     return m
-

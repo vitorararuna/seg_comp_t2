@@ -12,8 +12,8 @@ class RSAKeys:
         # Criacao de novas chaves
         if chavePub == 0 and chavePriv == 0:
             # 1) Definicao de primos
-            self.primo1 = utils.gerarPrimo(size)
-            self.primo2 = utils.gerarPrimo(size)
+            self.primo1 = utils.gerarPrimo(self.size)
+            self.primo2 = utils.gerarPrimo(self.size)
 
             print('primo 1:', self.primo1)
             print('primo 2:', self.primo2)
@@ -127,9 +127,9 @@ class RSAKeys:
    
 
     def tamanhoEmBits(self):
-        return self._n.bit_length()
+        return self._moduloN.bit_length()
     def tamanhoEmBytes(self):
-        return (self._n.bit_length()) // 8   
+        return (self._moduloN.bit_length()) // 8 
 
 
 
@@ -144,7 +144,7 @@ def importarChave(path) -> RSAKeys:
     key = utils.totuple(tokens)
     if tipoDaChave == "CHAVE PUBLICA":
         chavePub, modulus = key
-        return RSAKeys(chavePub==chavePub, modulus=modulus)
+        return RSAKeys(chavePub=chavePub, modulus=modulus)
     else:
         chavePriv, modulus = key
         return RSAKeys(chavePriv=chavePriv, modulus=modulus)
@@ -154,3 +154,4 @@ def tipoChave(extern_key):
         return "CHAVE PUBLICA"
     else:
         return "CHAVE PRIVADA"
+    
