@@ -3,6 +3,7 @@
 import sys
 from RSA.rsa import importarChave;
 from RSA.oaep import oaep_encrypt, oaep_decrypt;
+from RSA.assinatura import assinar, verificar;
 novos_caminhos = [
     '/Users/vitorararuna/dev/trabalho-seg-comp/RSA',
 ]
@@ -22,6 +23,7 @@ def main():
         print("1 - Gerar Chaves")
         print("2 - Exportar Ultima Chave Gerada")
         print("3 - Criptografia OAEP")
+        print("4 - Assinatura & Verificacao")
         a = input("Escolha uma opcao: ")
         if a == '1':
             try:
@@ -94,6 +96,38 @@ def main():
                     else:
                         break
                 except: print("Erro inesperado, talvez string tenha ficado muito grande")
+        elif a == '4':
+             option = True
+             while option:
+                print('************ ASSINATURA & VERIFICACAO ************')
+                opt = input("1) Gerar Assinatura \n2) Verificar Assinatura \n3) Voltar ")
+                try:
+                    if opt == '1':
+                        path = input("Path da chave privada: ")
+                        chavePrivImportada = importarChave(path)
+                        mensagem = input("Digite a mensagem a ser assinada: ")
+                        print("gerando assinatura...")       
+                        assinatura = assinar(mensagem, chavePrivImportada)
+                        print("Assinatura Gerada: ", assinatura)
+                        with open('assinatura', 'w') as f:
+                            f.write(assinatura)
+                        with open('original', 'w') as f:
+                            f.write(mensagem)
+                        print("Assinatura e Mensagem original exportadas para os arquivos 'assinatura' e 'mensagem' respectivamente.")
+                    elif opt == '2':
+                        path = input("Path da chave publica de quem assinou: ")
+                        chavePubImportada = importarChave(path)
+                        path = input("Path da assinatura: ")
+                        with open(path, 'r') as f:
+                            signature = f.read()
+                        s = input("Digite a mensagem original: ")
+                        if verificar(s, signature, chavePubImportada):
+                            print("\n\nVERIFICADA COM SUCESSO!.\n\n")
+                        else: 
+                            print("\n\nFALHA NA VERIFICACAO.\n\n")
+                    # elif opt == '3':
+                    #     break
+                except: print("Erro inesperado na tentativa de assinatura/verificacao")
         elif a == 'x':
             break
         else:
