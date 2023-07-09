@@ -3,14 +3,14 @@ import RSA.utils as utils
 
 
 class RSAKeys:
-    def __init__(self, size=1024, primo1=0, primo2=0, chavePub= 0, chavePriv = 0, modulus=0):
+    def __init__(self, size=1024, primo1=0, primo2=0, e= 0, d = 0, modulus=0):
         self.size = size # Tamanho do nmr primo em bits:
 
-        self._chavePub = 0
-        self._chavePriv = 0
+        self._e = 0
+        self._d = 0
 
         # Criacao de novas chaves
-        if chavePub == 0 and chavePriv == 0:
+        if e == 0 and d == 0:
             # 1) Definicao de primos
             self.primo1 = utils.gerarPrimo(self.size)
             self.primo2 = utils.gerarPrimo(self.size)
@@ -22,18 +22,18 @@ class RSAKeys:
             self._moduloN = self.primo1 * self.primo2
             # 3) Calculando valor de Euler (phi(n))
             self.phi = (self.primo1 - 1) * (self.primo2-1)
-            # 4) Escolhendo inteiro tal que 2 < chavePub < phi(n) e mdc(chavePub, phi(n)) = 1; isto é, chavePub e phi(n) são primos primos
-            self._chavePub = self.gerarChavePub()
-            # 5) Determine chavePriv como chavePriv ≡ e−1 (mod phi(n)); isto é, chavePriv é o inverso multiplicativo modular de chavePub módulo phi(n)
-            self._chavePriv = self.gerarChavePriv(self._chavePub)
+            # 4) Escolhendo inteiro tal que 2 < e < phi(n) e mdc(e, phi(n)) = 1; isto é, e e phi(n) são primos primos
+            self._e = self.gerarE()
+            # 5) Determine d como d ≡ e−1 (mod phi(n)); isto é, d é o inverso multiplicativo modular de e módulo phi(n)
+            self._d = self.gerarD(self._e)
             
         # chave privada :
-        elif chavePub == 0 and ((chavePriv and modulus) != 0):
-            self._chavePriv = chavePriv
+        elif e == 0 and ((d and modulus) != 0):
+            self._d = d
             self._moduloN = modulus
         # chave publica:
-        elif chavePriv == 0 and ((chavePub and modulus) !=0):
-            self._chavePub = chavePub
+        elif d == 0 and ((e and modulus) !=0):
+            self._e = e
             self._moduloN = modulus
 
 
@@ -42,23 +42,23 @@ class RSAKeys:
     def moduloN(self):
         return int(self._moduloN)
     @property
-    def chavePub(self):
-        return int(self._chavePub)
+    def e(self):
+        return int(self._e)
     @property
-    def chavePriv(self):
-        return int(self._chavePriv)
+    def d(self):
+        return int(self._d)
     @property 
     def criarChavePublica(self):
         print("-> Criando chave publica...")
-        if self._chavePub != 0:
-            return RSAKeys(chavePub=self._chavePub, modulus=self._moduloN, chavePriv=0)
+        if self._e != 0:
+            return RSAKeys(e=self._e, modulus=self._moduloN, d=0)
         else:
             raise ValueError("Esta é uma chave privada, você não pode obter a chave pública.")  
     @property 
     def criarChavePrivada(self):
         print("-> Criando chave privada...")
-        if self._chavePriv != 0:
-            return RSAKeys(chavePriv=self._chavePriv, modulus=self._moduloN, primo1=self.primo1, primo2=self.primo2, chavePub=0) 
+        if self._d != 0:
+            return RSAKeys(d=self._d, modulus=self._moduloN, primo1=self.primo1, primo2=self.primo2, e=0) 
         else:
             raise ValueError("Esta é uma chave pública, você não pode obter a chave privada.")  
  
@@ -67,43 +67,46 @@ class RSAKeys:
 
      # Verdadeiro se a chave atual for pública
     def verificarPublica(self):
-        if self._chavePriv == 0:
+        if self._d == 0:
             return True
         return False
     
     # Verdadeiro se a chave atual for privada
     def verificarPrivada(self):
-        if self._chavePub == 0:
+        if self._e == 0:
             return True
         return False  
 
-    # Retorna um tupla da chave (chavePub, moduloN) para a pública e (chavePriv, moduloN) para a privada
+    # Retorna um tupla da chave (e, moduloN) para a pública e (d, moduloN) para a privada
     def pegarChave(self):
         if self.verificarPublica():
-            return (self.chavePub, self.moduloN)
+            return (self.e, self.moduloN)
         elif self.verificarPrivada():
-            return (self.chavePriv, self.moduloN)
-        else:
-            return ((self.chavePub, self.moduloN), (self.chavePriv, self.moduloN))
+            return (self.d, self.moduloN)
+        else: # MAYBE DESNCESS
+            return ((self.e, self.moduloN), (self.d, self.moduloN))
     
    
 # ------ Calculando novas chaves:
 
 
 
-    # Gera um valor para ChavePub que seja:
-            # 2 < ChavePub < phi(n) && ( n e phi(n) coprimos )
-    def gerarChavePub(self):
+    # Gera um valor para e que seja:
+            # 2 < e < phi(n) && ( n e phi(n) coprimos )
+    def gerarE(self):
        
         while True:
-            chavePub = random.randrange(2**(self.size - 1), 2**(self.size))
-            if utils.coprimo(chavePub, self.phi) and utils.coprimo(chavePub, self.moduloN):
-                return chavePub
+            e = random.randrange(2**(self.size - 1), 2**(self.size))
+            if utils.coprimo(e, self.phi) and utils.coprimo(e, self.moduloN):
+                print("E aqui: ", e)
+                return e
         
-    # Gera um valor para ChavePriv que seja: 
-            # ChavePriv * chavePub (mod phi(n))== 1 OR ChavePriv = inverso modulas da chavePub and phi(n)
-    def gerarChavePriv(self, chavePub):
-        return utils.inversoMultiplicativo(chavePub, self.phi)
+    # Gera um valor para d que seja: 
+            # d * e (mod phi(n))== 1 OR d = inverso modulas da e and phi(n)
+    def gerarD(self, e):
+        d = utils.inversoMultiplicativo(e, self.phi)
+        print("D aqui: ", d)
+        return d
 
     # Exportando chave cifrada para base64 (string) => (e,n)/(d,n) 
     def exportarChave(self):
@@ -143,11 +146,11 @@ def importarChave(path) -> RSAKeys:
     tokens = utils.decodingBASE64(chaveExterna) 
     key = utils.totuple(tokens)
     if tipoDaChave == "CHAVE PUBLICA":
-        chavePub, modulus = key
-        return RSAKeys(chavePub=chavePub, modulus=modulus)
+        e, modulus = key
+        return RSAKeys(e=e, modulus=modulus)
     else:
-        chavePriv, modulus = key
-        return RSAKeys(chavePriv=chavePriv, modulus=modulus)
+        d, modulus = key
+        return RSAKeys(d=d, modulus=modulus)
     
 def tipoChave(chaveExterna):
     if "CHAVE PUBLICA" in chaveExterna:

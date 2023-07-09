@@ -38,7 +38,7 @@ def main():
                 parDeChaves = RSAKeys(tam_chave_em_bits)
 
                 # Gets
-                chavePublica = parDeChaves.criarChavePublica 
+                chavePublica = parDeChaves.criarChavePublica
                 chavePrivada = parDeChaves.criarChavePrivada
 
 
