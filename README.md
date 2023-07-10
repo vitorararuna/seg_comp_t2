@@ -148,6 +148,8 @@ Obs.: Tanto a cifracao quanto a decifracao foram realizadas com o auxilio da pri
         return hash == hashDaAssinatura
  ```
 
-## Referencias
---- https://www.inf.pucrs.br/~calazans/graduate/TPVLSI_I/RSA-oaep_spec.pdf
---- https://cryptobook.nakov.com/digital-signatures/rsa-sign-verify-examples
+## Referências
+--- 
+---
+- https://www.inf.pucrs.br/~calazans/graduate/TPVLSI_I/RSA-oaep_spec.pdf
+- https://cryptobook.nakov.com/digital-signatures/rsa-sign-verify-examples
