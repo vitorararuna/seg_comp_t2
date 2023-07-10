@@ -3,7 +3,7 @@
 ## Alunos
 
 - Vitor Araruna - 202060980
-- Bruno Xavier
+- Bruno Xavier - 200015621
 
 ## Requisitos
 
