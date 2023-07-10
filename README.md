@@ -17,6 +17,8 @@ O segundo trabalho da disciplina de Segurança Computacional consiste em impleme
 # Algoritmos
 
 ## Geração de primos e método Miller-Rabin
+---
+---
 
 A função Miller-Rabin desempenha um papel importante na geração de números primos, pois oferece um método probabilístico eficiente para testar a primalidade de um número. 
 
@@ -70,14 +72,76 @@ se não:
 
 
 ## RSA (Rivest, Shamir e Adleman)
+---
+---
 
 É um algoritmo de criptografia assimétrica muito utilizado para proteger a comunicação e garantir a segurança das informações. Ele envolve o uso de duas chaves: uma chave pública para criptografar os dados e uma chave privada correspondente para descriptografá-los.
 
-Além disso, é baseado em duas operações matemáticas fundamentais: a multiplicação de números primos grandes e o cálculo de exponenciação modular.
+Na presente implementacao a chave publica e privada sao compostas por (e, n) e (d, n), respectivamente!
 
 A segurança do algoritmo RSA é baseada no fato de que é computacionalmente difícil fatorar números primos grandes. A dificuldade de fatorização dificulta a obtenção da chave privada a partir da chave pública, fazendo com que o algoritmo seja resistente a ataques de força bruta, por exemplo.
 
-    p = primo aleatório gerado no item anterior
-    q = primo aleatório gerado no item anterior
-    phi = função de Euler
+ - **GERAÇAO DE  "e"**
+    - A partir desse momento, já temos p, q, n e phi, onde:
+        - p = primo aleatório gerado no item anterior;
+        - q = primo aleatório gerado no item anterior;
+        - n = p*q [Monudlo "n"];
+        - phi = (p-1)*(q-1) [valor de Euler];
+    - O método **"gerarE"** é responsável por gerar esse valor no algoritmo RSA. Esse processo leva em consideração alguns critérios para garantir a correta escolha de e:
+        - Ele precisa estar no intervalo 2**(self.size - 1) a 2**(self.size). Isso garante que e tenha o tamanho desejado em bits.
+        - Ele precisa ser coprimo tanto com o valor de Euler (phi) quanto com o produto dos números primos (n) utilizados na geração das chaves. Essa condição é fundamental para a segurança do algoritmo, pois garante que o cálculo do inverso multiplicativo modular seja possível e que a chave privada possa ser usada para descriptografar corretamente.
+        -  ```
+            def gerarE(self):
+                while True:
+                    e = random.randrange(2**(self.size - 1), 2**(self.size))
+                    if utils.coprimo(e, self.phi) and utils.coprimo(e, self.n):
+                        return e
+           ```
     
+ - **GERAÇAO DE  "d"**
+    - Agora que temos o valor de "e", conseguimos gerar nosso valor "d" para compor nossa chave privada através do método **"gerarD"** .
+    - O método **"gerarD"** pode ser usado de 2 maneiras na geracao de "e". Uma com um algoritmo de euclides estendido (def euclidesInversoMultiplicativo()) construido no arquivo "RSA.utils" e outra semo uso e euclides, mas que também usa o conceito de inverso multiplicativo.
+    - O uso do Euclides estendido permite calcular o inverso multiplicativo modular em uma ampla variedade de situações, inclusive quando o maior divisor comum entre "e" e self.phi não é igual a 1. Essa flexibilidade pode ser benéfica em determinados cenários de segurança.
+    -  ```
+            def gerarD(self, e):
+                # d = utils.euclidesInversoMultiplicativo(e, self.phi)
+                d = pow(e, -1, self.phi) # = onde d é inverso multiplicativo de "e" módulo self.phi
+                return d
+       ```
+
+
+ - **EXPORTAÇAO DAS CHAVES**
+     - As chaves (pub e priv) sao exportadas como string em base64 pela fucao "exportarChave" da nossa classe RSAKeys
+
+
+## OAEP (Optimal Asymmetric Encryption Padding)
+---
+---
+Para realizar a cifração/decifração assimétrica RSA, usamos o método OAEP. Este que é um esquema de preenchimento para criptografia assimétrica, frequentemente usado em conjunto com o RSA. Seu objetivo é melhorar a segurança e a aleatoriedade dos dados criptografados. O OAEP adiciona um preenchimento aleatório aos dados antes de criptografá-los, tornando mais difícil para um adversário realizar ataques de texto simples ou outros ataques criptográficos.
+
+Obs.: Tanto a cifracao quanto a decifracao foram realizadas com o auxilio da primeira referencia desse documento (EME-OAEP e RSAES-OAEP). Todo processo desta etapda foi comentado nos scripts do arquivo "RSA.oaep" para melhor compreensao.
+
+
+## Assinatura & Verificacao
+
+- Para assinar, pegamos uma mensagem (a ser assinada) do usuário a chave privada para gerar a assinatura em base 64:
+
+ ```
+    def assinar(mensagem, chave: RSAKeys):
+        mensagem = mensagem.encode('ascii')
+        hash = int.from_bytes(sha512(mensagem).digest(), byteorder='big')
+        assinatura = pow(hash, chave.chavePriv, chave.n)
+        assinatura = utils.toBase64(str(assinatura)) # Assinatura para base 64
+        return assinatura
+ ```
+
+- Já para verificar a assinatura, pegamos uma mensagem do usuario, a assinatura gerada no passo anterior e a chave publica de quem assinou. Com isso verificamos se a assinatura e a mensagem coincide, atraves do hash (512) da mensagem digitada e o hash da assinatura, que é um pow(assinatura, chavePub e n):
+
+ ```
+    def verificar(mensagem, assinatura, chave:RSAKeys) -> bool:
+        mensagem = mensagem.encode('ascii')
+        hash = int.from_bytes(sha512(mensagem).digest(), byteorder='big')
+        assinatura = int(utils.fromBase64(assinatura))
+        hashDaAssinatura = pow(assinatura, chave.chavePub, chave.n)
+        return hash == hashDaAssinatura
+ ```

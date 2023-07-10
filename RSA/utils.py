@@ -14,20 +14,20 @@ def coprimo(x, y):
         return mdc(x, y) == 1
 
 # Algoritmo euclidiano estendido
-def euclidesEstendido(a, b):
-    if a == 0:
-        return (b, 0, 1)
+def euclidesEstendido(e, phi):
+    if e == 0:
+        return (phi, 0, 1)
     else:
-        g, y, x = euclidesEstendido(b % a, a)
-        return (g, x - (b // a) * y, y)
+        g, y, x = euclidesEstendido(phi % e, e)
+        return (g, x - (phi // e) * y, y)
         
-# Calcula inverso multipicativo (usando pow(a,b,c)) para encontrar chavePriv
-def inversoMultiplicativo(a, m):
-    g, x, y = euclidesEstendido(a, m)
+# Calcula inverso multipicativo para encontrar e
+def euclidesInversoMultiplicativo(e, phi):
+    g, x, y = euclidesEstendido(e, phi)
     if g != 1:
         return -1
     else:
-        return x % m
+        return x % phi
 
 
 
@@ -168,11 +168,11 @@ def mask(seed, emLen, hash=hashlib.sha256):
     T = b""
 
 
-    # 3. For i = 0 to ceiling(emLen/hLen), do
-        # 3.1 Convert i to an octet string C of length 4 with the primitive I2OSP:
-        # C = I2OSP(i, 4).
-        # 3.2 Concatenate the hash of the seed Z and C to the octet string T:
-        # T = T + Hash(Z + C)
+    # 3. Para i = 0 in (emLen/hLen), faça
+         # 3.1 Converte i em uma string de octeto C de comprimento 4 com o primitivo I2OSP:
+         # C = I2OSP(i, 4).
+         # 3.2 Concatena o hash da semente Z e C para a string de octeto T:
+         # T = T + Hash(Z + C)
     for i in range(math.ceil(emLen / hLen)):
         c = inteiroParaOcteto (i, 4)
         hash().update(seed + c)

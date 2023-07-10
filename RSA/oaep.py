@@ -12,9 +12,7 @@ from RSA.rsa import RSAKeys
 
 # ----------------------------------------------------------------------------------------------------------------- # 
 
-
-
-
+def oaep_encrypt(chavePub:RSAKeys, M, P = b"") -> bytes:
 # RSAES-OAEP-Encrypt((n, e), M, P)
 #      Entradas:
 #          1. Chave pública RSA - (e, n) 
@@ -25,10 +23,8 @@ from RSA.rsa import RSAKeys
 #      Saída:
 #           1. C - Mensagem cifrada em string de octetos de comprimento k
 #      Erros: 1. mensagem muito longa
-#      Suposição: a chave pública (n, e) é válida
 #   b"" indica que a string é tratada como uma sequência de 
 #   bytes em vez de uma sequência de caracteres Unicode
-def oaep_encrypt(chavePub:RSAKeys, M, P = b"") -> bytes:
     print("oaep_encrypt")
     M = M +  ' '
 
@@ -53,66 +49,64 @@ def oaep_encrypt(chavePub:RSAKeys, M, P = b"") -> bytes:
     print("inteiroParaOcteto", C)
     return C
 
-
-# OAEP encoding operation:
-
-# Entradas:
-#     - M: mensagem a ser codificada, uma string de octetos de comprimento máximo (emLen - 1 - 2hLen)  
-#     - P: Parâmetros de Codificação, uma string de octeto
-#     -emLen: Comprimento pretendido em octetos da mensagem codificada, pelo menos 2hLen + 1
-# Opcoes: 
-#     - Funcao hash (hLen denota o comprimento em octetos da saída da função hash)
-#     - Funcao mask para gerar a mascara
-# Saida:
-#     - EM: Mensagem codificada, uma string de octetos de comprimento emLen
-# Exceções:
-#     - Mensagem muito longa // String de parâmetro muito longa
-
 def oaep_encode(M:str, emLen, label= b"", hash=utils.sha256, mask=utils.mask) -> bytes:
+    # OAEP encoding operation:
+    # Entradas:
+    #     - M: mensagem a ser codificada, uma string de octetos de comprimento máximo (emLen - 1 - 2hLen)  
+    #     - P: Parâmetros de Codificação, uma string de octeto
+    #     -emLen: Comprimento pretendido em octetos da mensagem codificada, pelo menos 2hLen + 1
+    # Opcoes: 
+    #     - Funcao hash (hLen denota o comprimento em octetos da saída da função hash)
+    #     - Funcao mask para gerar a mascara
+    # Saida:
+    #     - EM: Mensagem codificada, uma string de octetos de comprimento emLen
+    # Exceções:
+    #     - Mensagem muito longa // String de parâmetro muito longa
     print("oaep_encode")
-    # 1. Se o comprimento de P for maior que a limitação de entrada para a função hash:
-     # (2 ^ 61 - 1 octetos para SHA-1) ---> ‘string de parâmetro muito longa’
 
-    # 2. let pHash = Hash(P), an octet string of length hLen.
+
     M = M.encode('utf-8')
-    lHash = hash(label)
-    hLen = len(lHash)
-    mLen = len(M)    
-    # 4. Generate an octet string PS consisting of (emLen − mLen − 2hLen − 1) zero octets. 
-    # The length of PS may be 0.
+    lHash = hash(label) # valor de hash do label=string em seq de bytes
+    hLen = len(lHash) # comprimento em octetos do valor de hash lHash. Essa variável armazena o comprimento do valor de has
+    mLen = len(M) # comprimento em octetos da mensagem original M  
 
-    # Gera uma string de octetos PS  de (emLen − mLen − 2hLen − 1) zero octetos.
-    # O comprimento de PS pode ser 0.
 
-    # PADDING (preenchimento):
+    # 2. Gera uma string de octetos "PS" de (emLen − mLen − 2hLen − 1) zero octetos.
+    # Ou seja, é a sequência de octetos de preenchimento 
     zero_octet = b'\x00'
     PS = zero_octet * (emLen - mLen - 2*hLen - 2)
     
-    # 5. Concatena lHash, PS, mensagem M e outros preenchimentos para formar um bloco de dados BD:
-    # BD = lHash + PS + 01 + M.
+    # 3. Concatena lHash, PS, mensagem M e outros preenchimentos para formar um bloco de dados BD:
+    # BD = lHash + PS + 01 + M. = Bloco de Dados resultante da concatenacao
     BD = lHash + PS + b'\x01' + M
 
-    # 6. Gera uma seed de string de octetos aleatória de comprimento hLen.
+    # 4. Gera uma seed de string de octetos aleatória de comprimento hLen.
     seed = os.urandom(hLen)
 
-    # 7. Seja bdMask = mask(seed, emLen − hLen)
+    # 5. Seja bdMask = mask(seed, emLen − hLen)
     bdMask = mask(seed, emLen - hLen)
 
-    # 8. DB xor bdMask.
-    maskedBd = utils.xor(BD, bdMask)
+    # 6. DB xor bdMask.
+    # A máscara bdMask é aplicada à sequência de dados BD pela operacao XOR e
+    # retorna uma nova sequência de octetos chamada maskedBd.
+    maskedBd = utils.xor(BD, bdMask) 
 
-    # 9. mask(maskedBd, hLen).
+    # 7. mask(maskedBd, hLen).
+    # A máscara seedMask é gerada aplicando a função mask(maskedBd, hLen) à sequência de octetos maskedBd
     seedMask = mask(maskedBd, hLen)
 
-    # 10. seed xor seedMask.
+    # 8. seed xor seedMask.
+    # A máscara seedMask é aplicada à semente (seed) por meio de uma operação de ou exclusivo (XOR) que
+    # retorna uma nova sequência de octetos chamada maskedSeed.
     maskedSeed = utils.xor(seed, seedMask)
 
-    # 11. maskedSeed + maskedBd.
+    # 9. maskedSeed + maskedBd.
+    # A mensagem codificada EM é formada pela concatenação da sequência de octetos maskedSeed com a
+    # sequência de octetos maskedBd.
     EM = maskedSeed + maskedBd
 
-    # 12. Output EM.
+    # 10. Output EM.
     return EM
-
 
 def rsaep(chavePub:RSAKeys, m) -> int:
 # Processo de cifrar Rsa
@@ -123,8 +117,6 @@ def rsaep(chavePub:RSAKeys, m) -> int:
     if c > n - 1 or c < 0:
         raise ValueError("M out of range")
     return c
-
-
 
 
 

@@ -65,9 +65,7 @@ def main():
                 print(' priv exportada: \n', privExportada)
                 print('\n\n')
 
-            except (KeyError, ValueError):
-                print(KeyError, ValueError)
-                print(" ********** Erro inesperado na tentativa de expor chaves ********** ") 
+            except (KeyError, ValueError): print(KeyError, ValueError, "Erro inesperado na tentativa de expor chaves ") 
         elif a == '3':
             option = True
             while option:
@@ -95,7 +93,7 @@ def main():
                         print("Mensagem decifrada: ", DM)
                     else:
                         break
-                except: print("Erro inesperado, talvez string tenha ficado muito grande")
+                except(KeyError, ValueError): print(KeyError, ValueError, "Erro inesperado, chave bugada int muito grande na conversao para octeto")
         elif a == '4':
              option = True
              while option:
@@ -113,7 +111,7 @@ def main():
                             f.write(assinatura)
                         with open('original', 'w') as f:
                             f.write(mensagem)
-                        print("Assinatura e Mensagem original exportadas para os arquivos 'assinatura' e 'mensagem' respectivamente.")
+                        print("Assinatura e Mensagem original exportadas para os arquivos 'assinatura' e 'original' respectivamente.")
                     elif opt == '2':
                         path = input("Path da chave publica de quem assinou: ")
                         chavePubImportada = importarChave(path)
@@ -127,7 +125,7 @@ def main():
                             print("\n\nFALHA NA VERIFICACAO.\n\n")
                     # elif opt == '3':
                     #     break
-                except: print("Erro inesperado na tentativa de assinatura/verificacao")
+                except(KeyError, ValueError): print(KeyError, ValueError, "Erro inesperado na tentativa de assinatura/verificacao")
         elif a == 'x':
             break
         else:

@@ -92,20 +92,18 @@ class RSAKeys:
 
 
     # Gera um valor para e que seja:
-            # 2 < e < phi(n) && ( n e phi(n) coprimos )
+            # 2 < e < phi(n) && ( n e phi(n) coprimos de e)
     def gerarE(self):
        
         while True:
             e = random.randrange(2**(self.size - 1), 2**(self.size))
             if utils.coprimo(e, self.phi) and utils.coprimo(e, self.n):
-                print("E aqui: ", e)
                 return e
         
-    # Gera um valor para d que seja: 
-            # d * e (mod phi(n))== 1 OR d = inverso modulas da e and phi(n)
+    # Podemos usar Euclides Estendido Ou Nao, basta escolher qual "d" retornar
     def gerarD(self, e):
-        d = utils.inversoMultiplicativo(e, self.phi)
-        print("D aqui: ", d)
+        # d = utils.euclidesInversoMultiplicativo(e, self.phi)
+        d = pow(e, -1, self.phi) # = inverso multiplicativo de "e" módulo self.phi
         return d
 
     # Exportando chave cifrada para base64 (string) => (e,n)/(d,n) 
@@ -157,4 +155,4 @@ def tipoChave(chaveExterna):
         return "CHAVE PUBLICA"
     else:
         return "CHAVE PRIVADA"
-    
+   
