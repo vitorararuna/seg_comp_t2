@@ -123,6 +123,8 @@ Obs.: Tanto a cifracao quanto a decifracao foram realizadas com o auxilio da pri
 
 
 ## Assinatura & Verificacao
+---
+---
 
 - Para assinar, pegamos uma mensagem (a ser assinada) do usuário a chave privada para gerar a assinatura em base 64:
 
@@ -145,3 +147,7 @@ Obs.: Tanto a cifracao quanto a decifracao foram realizadas com o auxilio da pri
         hashDaAssinatura = pow(assinatura, chave.chavePub, chave.n)
         return hash == hashDaAssinatura
  ```
+
+## Referencias
+--- https://www.inf.pucrs.br/~calazans/graduate/TPVLSI_I/RSA-oaep_spec.pdf
+--- https://cryptobook.nakov.com/digital-signatures/rsa-sign-verify-examples
