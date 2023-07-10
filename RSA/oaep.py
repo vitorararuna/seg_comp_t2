@@ -36,17 +36,21 @@ def oaep_encrypt(chavePub:RSAKeys, M, P = b"") -> bytes:
     #  codificação P para produzir uma mensagem codificada EM de comprimento k - 1 octetos:
     #  k = o comprimento em octetos do módulo n
     k = chavePub.tamanhoEmBytes()
+    print("chavePub.tamanhoEmBytes", k)
     EM = oaep_encode(M, k-1, P)
 
     # Converte EM em uma mensagem inteira representativa m
     m = utils.octetoParaInteiro(EM)
+    print("octetoParaInteiro(EM)", m)
 
     # Aplica a primitiva de criptografia RSAEP à chave pública (n, e)
     # e o representante da mensagem "m" para produzir um texto cifrado inteiro representativo c:
     c = rsaep(chavePub=chavePub, m=m)
+    print("RSAEP à chave pública (n, e)", c)
 
     # 5. Converta o texto cifrado representativo c em um texto cifrado C de comprimento k octeto
     C = utils.inteiroParaOcteto(c, k)
+    print("inteiroParaOcteto", C)
     return C
 
 
@@ -65,7 +69,7 @@ def oaep_encrypt(chavePub:RSAKeys, M, P = b"") -> bytes:
 #     - Mensagem muito longa // String de parâmetro muito longa
 
 def oaep_encode(M:str, emLen, label= b"", hash=utils.sha256, mask=utils.mask) -> bytes:
-   
+    print("oaep_encode")
     # 1. Se o comprimento de P for maior que a limitação de entrada para a função hash:
      # (2 ^ 61 - 1 octetos para SHA-1) ---> ‘string de parâmetro muito longa’
 

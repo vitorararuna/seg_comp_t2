@@ -12,14 +12,14 @@ class RSAKeys:
         # Criacao de novas chaves
         if e == 0 and d == 0:
             # 1) Definicao de primos
-            self.primo1 = utils.gerarPrimo(self.size)
-            self.primo2 = utils.gerarPrimo(self.size)
+            self.primo1 = utils.gerarPrimo()
+            self.primo2 = utils.gerarPrimo()
 
             print('primo 1:', self.primo1)
             print('primo 2:', self.primo2)
 
             # 2) Calculando Modulo de N
-            self._moduloN = self.primo1 * self.primo2
+            self._n = self.primo1 * self.primo2
             # 3) Calculando valor de Euler (phi(n))
             self.phi = (self.primo1 - 1) * (self.primo2-1)
             # 4) Escolhendo inteiro tal que 2 < e < phi(n) e mdc(e, phi(n)) = 1; isto é, e e phi(n) são primos primos
@@ -30,17 +30,17 @@ class RSAKeys:
         # chave privada :
         elif e == 0 and ((d and modulus) != 0):
             self._d = d
-            self._moduloN = modulus
+            self._n = modulus
         # chave publica:
         elif d == 0 and ((e and modulus) !=0):
             self._e = e
-            self._moduloN = modulus
+            self._n = modulus
 
 
 # ------
     @property
-    def moduloN(self):
-        return int(self._moduloN)
+    def n(self):
+        return int(self._n)
     @property
     def e(self):
         return int(self._e)
@@ -51,14 +51,14 @@ class RSAKeys:
     def criarChavePublica(self):
         print("-> Criando chave publica...")
         if self._e != 0:
-            return RSAKeys(e=self._e, modulus=self._moduloN, d=0)
+            return RSAKeys(e=self._e, modulus=self._n, d=0)
         else:
             raise ValueError("Esta é uma chave privada, você não pode obter a chave pública.")  
     @property 
     def criarChavePrivada(self):
         print("-> Criando chave privada...")
         if self._d != 0:
-            return RSAKeys(d=self._d, modulus=self._moduloN, primo1=self.primo1, primo2=self.primo2, e=0) 
+            return RSAKeys(d=self._d, modulus=self._n, primo1=self.primo1, primo2=self.primo2, e=0) 
         else:
             raise ValueError("Esta é uma chave pública, você não pode obter a chave privada.")  
  
@@ -77,14 +77,14 @@ class RSAKeys:
             return True
         return False  
 
-    # Retorna um tupla da chave (e, moduloN) para a pública e (d, moduloN) para a privada
+    # Retorna um tupla da chave (e, n) para a pública e (d, n) para a privada
     def pegarChave(self):
         if self.verificarPublica():
-            return (self.e, self.moduloN)
+            return (self.e, self.n)
         elif self.verificarPrivada():
-            return (self.d, self.moduloN)
+            return (self.d, self.n)
         else: # MAYBE DESNCESS
-            return ((self.e, self.moduloN), (self.d, self.moduloN))
+            return ((self.e, self.n), (self.d, self.n))
     
    
 # ------ Calculando novas chaves:
@@ -97,7 +97,7 @@ class RSAKeys:
        
         while True:
             e = random.randrange(2**(self.size - 1), 2**(self.size))
-            if utils.coprimo(e, self.phi) and utils.coprimo(e, self.moduloN):
+            if utils.coprimo(e, self.phi) and utils.coprimo(e, self.n):
                 print("E aqui: ", e)
                 return e
         
@@ -130,9 +130,9 @@ class RSAKeys:
    
 
     def tamanhoEmBits(self):
-        return self._moduloN.bit_length()
+        return self._n.bit_length()
     def tamanhoEmBytes(self):
-        return (self._moduloN.bit_length()) // 8 
+        return (self._n.bit_length()) // 8 
 
 
 

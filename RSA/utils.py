@@ -34,95 +34,31 @@ def inversoMultiplicativo(a, m):
 
 ############################### - PRIMALIDADE -  ###############################
 
-# Gerando primo aleatório de tamanho "bits":
-def gerarPrimo(bits):
-   
-    while True:
-        primoCandidato = obterPrimo(listaDePrimos, bits=bits)
-        if testeMillerRabin(primoCandidato, k=20):
-            return primoCandidato
 
-# Retorna uma lista com primos menores ou iguais a "numero".
-# Também é dado que len(lista) é um número pequeno.
-def pequenaListaDePrimos(number):
-    
-    # Lista de primos até o número de entrada
-    listaDePrimos = []       
-
-    # Criando um array booleano "primo[0..n]" com todas as entradas como true:
-    primo = [True for i in range(number+1)]
-    # primeiro primo
-    p = 2
-
-
-    # algoritmo:
-    while p * p <= number:
-        if primo[p] == True:
-        # Atualizando todos os múltiplos de p
-            for i in range(p * p, number+1, p):
-                primo[i] = False
-        p+=1
-       
-       
-    for i in range(number):
-        if primo[i] == True:
-            listaDePrimos.append(i)        
-    print("lista De Primos de tam : ", len(listaDePrimos))
-    return listaDePrimos[2:]
-
-listaDePrimos = pequenaListaDePrimos(1000)
-
-# nmr aleatório do tamanho de tamanho 2^{bits-1} a 2^bits ":
-def numeroAleatorio(bits):
-    return(random.randrange(2**(bits-1), 2**bits-1))
-
-# -----<<<< Processo para obter Primo  >>>>-----
-# - Divisão por primos pré-gerados:
-            # O número que estamos testando é dividido pelos primos pré-gerados.
-# -Verificação de divisibilidade:
-            # Verificamos se o número é divisível por algum dos primos pré-gerados.
-# -Geração de um novo primo:
-            # Se o número for divisível por algum dos primos pré-gerados, escolhemos um novo número para testar.
-# -Repetição do processo:
-            # Repetimos os passos de divisão e verificação de divisibilidade até encontrar um número que não seja divisível por nenhum dos primos pré-gerados.
-def obterPrimo(listaDePrimos, bits=1024):
-   
-    # primos até 1000
-    while True:
-        primoCandidato = numeroAleatorio(bits=bits) 
-        for divisor in listaDePrimos: 
-            if primoCandidato % divisor == 0 and divisor  ** 2 <= primoCandidato:
-                break
-                # Entao se nenhum divisor for encontrado, retorna o valor
-            else:
-                return primoCandidato
-
-# Teste de Miller Rabin para k iterações"
-def testeMillerRabin(n, k=10):
-    for i in range(k):
+def millerRabin(n):
+    d, s = n - 1, 0
+    while d % 2 == 0:
+        s += 1
+        d >>= 1 # d é dividido por 2 utilizando o operador de deslocamento bit a direita (d >>= 1).
+    for _ in range(40):
         a = random.randrange(2, n - 1)
-        if not iteracaoMillerRabin(n, a):
-            return False
+        x = pow(a, d, n)
+        if x == 1 or x == n - 1:
+            continue
+        for _ in range(s - 1):
+            x = pow(x, 2, n)
+            if x == n - 1:
+                break
+        return False
     return True
 
-# iteração do teste Miller Rabin"
-def iteracaoMillerRabin(n, a):
-    exp = n - 1
-    while not exp & 1:
-        exp >>= 1
-            
-    if pow(a, exp, n) == 1:
-        return True
-            
-    while exp < n - 1:
-        if pow(a, exp, n) == n - 1:
-            return True
-        exp <<= 1
-            
-    return False
-    
+# valor aleatório de tamanho entre (2 ** (bits - 2), 2 ** (bits - 1)) * 2 - 1 ---2**(bits-1), 2**bits-1)
+def rand_odd(bits=1024):
+    return random.randrange(2 ** (bits - 2), 2 ** (bits - 1)) * 2 - 1
 
-
+# Gerando primo aleatório de tamanho "bits":
+def gerarPrimo():
+        return next(filter(millerRabin, iter(rand_odd, 0)))
 
 ############################### - Auxiliares -  ###############################
 

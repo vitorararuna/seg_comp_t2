@@ -29,13 +29,13 @@ def main():
             try:
                 print('\n\n')
                 print('************ RSA -> Gerador de Chaves ************')
-                tam_chave_em_bits =  input("Tamanho de chave desejado (em bits): ")
-                tam_chave_em_bits =  int(tam_chave_em_bits)
+                # tam_chave_em_bits =  input("Tamanho de chave desejado (em bits): ")
+                # tam_chave_em_bits =  int(tam_chave_em_bits)
 
-                print("Gerando chave de " + str(tam_chave_em_bits)+ " bits... Aguarde!")
+                print("Gerando chave de 1024 bits... Aguarde!")
                 start = time.time()
 
-                parDeChaves = RSAKeys(tam_chave_em_bits)
+                parDeChaves = RSAKeys(1024)
 
                 # Gets
                 chavePublica = parDeChaves.criarChavePublica
@@ -46,8 +46,8 @@ def main():
                 print('Chave Privada Gerada: ', chavePrivada.pegarChave())
                 print("--- Tempo Total Em Segundos Para Geracao de Chaves:!!! ---", (time.time() - start))
                 print('\n\n')
-            except:
-                print(" ********** Erro inesperado na tentativa de gerar chaves ********** ") 
+            except (KeyError, ValueError):
+                print(KeyError, ValueError) 
         elif a == '2':
             try:
                 print('\n\n')
