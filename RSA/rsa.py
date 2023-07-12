@@ -120,7 +120,7 @@ class RSAKeys:
 # ------ Auxiliares
 
     def cifrar(self, text):
-        return pow(text, self.c, self.n)
+        return pow(text, self.e, self.n)
     def decifrar(self, cipher):
         if cipher > self.n:
             raise ValueError("Cipher too large")
